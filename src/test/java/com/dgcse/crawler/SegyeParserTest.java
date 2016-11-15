@@ -5,8 +5,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 
 /**
@@ -15,17 +14,17 @@ import static org.junit.Assert.assertNotNull;
 public class SegyeParserTest {
 
     @Test
-    @Ignore
+    //@Ignore
     public void test() throws Exception{
         SegyeParser parser = new SegyeParser();
         HttpResult httpResult = parser.getDaily("2016","10","03",1);
 
         List<String> urlList = parser.getNewsUrlList(httpResult);
         //for(String str : urlList){
-        System.out.println(httpResult);
+        //System.out.println(urlList);
         //}
         for(String str : urlList){
-            //System.out.println(str);
+            System.out.println(str);
         }
     }
     @Test
@@ -55,17 +54,26 @@ public class SegyeParserTest {
         System.out.println(realBody);
     }
     @Test
-    //@Ignore
+    @Ignore
     public void testSplitBody() throws Exception{
         SegyeParser segyeparser = new SegyeParser();
         String body = segyeparser.parse("http://www.segye.com/content/html/2016/10/07/20161007002895.html");
         String realBody = segyeparser.getBody(body);
-        //assertNotNull(realBody);
+        assertNotNull(realBody);
         System.out.println(realBody);
         List<String> splitedBody = segyeparser.splitToParagraph(realBody);
         for (String s : splitedBody) {
             System.out.println(s);
         }
+    }
+
+    @Test
+    public void isFinalPageTest() throws Exception{
+        SegyeParser parser = new SegyeParser();
+        String body = parser.parse("http://www.segye.com/issue/leading.jsp?page=32&categoryId=0102020000000&yyyy=2016&mm=11&dd=15");
+        assertTrue(parser.isFinalPage(new HttpResult(100,body)));
+        body = parser.parse("http://www.segye.com/issue/leading.jsp?page=31&categoryId=0102020000000&yyyy=2016&mm=11&dd=15");
+        assertFalse(parser.isFinalPage(new HttpResult(100,body)));
     }
     @Test
     @Ignore
