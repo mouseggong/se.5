@@ -5,25 +5,27 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class SegyeParserTest {
 
     @Test
     //@Ignore
-    public void test() throws Exception{//2016년 10월 03일의 기사들의 URL주소를 가져오는 메소드
+
+    public void test() throws Exception {//2016년 10월 03일의 기사들의 URL주소를 가져오는 메소드
         SegyeParser parser = new SegyeParser();
-        HttpResult httpResult = parser.getDaily("2016","10","03",1);//파서로 해당 날짜의 httpResult를 생성
+        HttpResult httpResult = parser.getDaily("2016", "10", "03", 1);//파서로 해당 날짜의 httpResult를 생성
 
         List<String> urlList = parser.getNewsUrlList(httpResult);//파서로 해당 날짜의 httpResult의 뉴스 URL리스트를 생성
         //for(String str : urlList){
         //System.out.println(httpResult);
         //}
-        for(String str : urlList){
-        System.out.println(str);
+        for (String str : urlList) {
+            System.out.println(str);
+
+        }
     }
-}
+
     @Test
     @Ignore
     public void testCrawler() throws Exception{//세계파서로 해당 URL의 모든 소스내용을 파싱하여 가져온다.
@@ -56,12 +58,21 @@ public class SegyeParserTest {
         SegyeParser segyeparser = new SegyeParser();
         String body = segyeparser.parse("http://www.segye.com/content/html/2016/10/07/20161007002895.html");
         String realBody = segyeparser.getBody(body);
-        //assertNotNull(realBody);
+        assertNotNull(realBody);
         System.out.println(realBody);
         List<String> splitedBody = segyeparser.splitToParagraph(realBody);
         for (String s : splitedBody) {
             System.out.println(s);
         }
+    }
+
+    @Test
+    public void isFinalPageTest() throws Exception{
+        SegyeParser parser = new SegyeParser();
+        String body = parser.parse("http://www.segye.com/issue/leading.jsp?page=32&categoryId=0102020000000&yyyy=2016&mm=11&dd=15");
+        assertTrue(parser.isFinalPage(new HttpResult(100,body)));
+        body = parser.parse("http://www.segye.com/issue/leading.jsp?page=31&categoryId=0102020000000&yyyy=2016&mm=11&dd=15");
+        assertFalse(parser.isFinalPage(new HttpResult(100,body)));
     }
     @Test
     @Ignore

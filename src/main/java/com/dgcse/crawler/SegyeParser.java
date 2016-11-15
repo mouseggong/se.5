@@ -39,6 +39,12 @@ public class SegyeParser {
         return new HttpResult(code,body);
     }
 
+    public boolean isFinalPage(HttpResult httpResult){
+        Document doc = Jsoup.parse(httpResult.getBody());
+
+        Elements elements = doc.getElementsByClass("no_articles");
+        return elements.size()==1;
+    }
 
     public List<String> getNewsUrlList(HttpResult httpResult) throws Exception{
         Document doc = Jsoup.parse(httpResult.getBody());
