@@ -19,11 +19,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import scala.collection.Seq;
 
-/**
- * Created by LeeHyungRae on 2016. 10. 10..
- *
- * 세계일보 파싱 모듈
- */
 public class SegyeParser {
 
     private static final String NEWS_LIST_ID = "news_list";
@@ -113,8 +108,12 @@ public class SegyeParser {
                 wordList.add(word);
             }
         }
-
         return wordList;
     }
+    public String extractReporter(String body){
+        String realBody = this.getBody(body);
+        List<String> wordList = this.extractWordList(realBody);
 
+        return wordList.get(wordList.size()-2);
+    }
 }
