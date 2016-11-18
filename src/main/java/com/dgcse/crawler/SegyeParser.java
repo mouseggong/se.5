@@ -1,8 +1,12 @@
 package com.dgcse.crawler;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-
 
 import com.dgcse.crawler.entity.HttpResult;
 import com.google.common.collect.Lists;
@@ -39,7 +43,47 @@ public class SegyeParser {
         return new HttpResult(code,body);
     }
 
-    public boolean isFinalPage(HttpResult httpResult){
+    public List<String>[] oneWeek_urlList(){ //현재날짜 - 1일부터 1주일 전까지의 총 7일간의 전체 뉴스 추출
+        HttpResult[][] httpResult = new HttpResult[7][40]; //넉넉하게 사이즈 잡음 (보통 최소 15page ~ 최대 31~32page까지 있음)
+        List<String>[] urlList = new List[280];
+        int URL_index = 0;
+        int index = 0;
+        long date_time = 0;
+        long one_day = 24*60*60*1000;
+        HttpResult temp;
+        Date ch_date;
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        Calendar today = Calendar.getInstance();
+        String all_date = Integer.toString(today.get(Calendar.YEAR)) + Integer.toString(today.get(Calendar.MONTH)+1) + Integer.toString(today.get(Calendar.DAY_OF_MONTH)-1);
+        try{
+            for(int index_day = 0; index_day < 7; index_day++) {
+                if(all_date != ""){
+                    for (index = 0; index < httpResult[index_day].length; index++) {
+                        httpResult[index_day][index] = this.getDaily(all_date.substring(0, 4), all_date.substring(4, 6), all_date.substring(6, 8), index + 1);
+                        if (this.isFinalPage(httpResult[index_day][index]))//마지막 페이지의 다음 페이지이면 break
+                            break;
+                        temp = httpResult[index_day][index];
+                        urlList[URL_index + index] = this.getNewsUrlList(temp);
+                    }
+                    URL_index += index;//해당 인덱스일때는 null인 값이니깐, index+1이 아니라 index를 더한다.
+                    date_time = df.parse(all_date).getTime();
+                    date_time -= one_day;//해당 날짜에서 1일을 빼는 과정
+
+                    ch_date = new Date(date_time);
+                    all_date = df.format(ch_date);//다시 날짜형식으로 파싱
+                }
+            }
+        } catch (ParseException e){
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return urlList;
+    }
+
+    public boolean isFinalPage(HttpResult httpResult){ // 해당 날짜의 뉴스의 page가 끝이면 true 아니면 false 리턴
         Document doc = Jsoup.parse(httpResult.getBody());
 
         Elements elements = doc.getElementsByClass("no_articles");
