@@ -2,14 +2,9 @@ package com.dgcse.crawler.entity;
 
 import com.sun.istack.internal.Nullable;
 
-/**
- * Created by LeeHyungRae on 2016. 11. 14..
- *
- * Http Response 결과를 저장하기 위한 클래스
- */
 public class HttpResult {
-    int code;
-    String body;
+    private String body;
+    private int code;
 
     /**
      * Http Result 생성자
@@ -21,12 +16,19 @@ public class HttpResult {
         this.code = code;
         this.body = body;
     }
+    public String getBody() {
+        return body;
+    }
 
-    public int getCode(){
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public int getCode() {
         return code;
     }
 
-    public String getBody(){
-        return body;
+    public void setCode(int code) {
+        this.code = code;
     }
 }

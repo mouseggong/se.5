@@ -1,4 +1,4 @@
-package com.dgcse.crawler;
+package com.dgcse.crawler.module;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 
 import com.dgcse.crawler.entity.HttpResult;
 import com.google.common.collect.Lists;
@@ -23,13 +24,60 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import scala.collection.Seq;
 
-public class SegyeParser {
+public class SegyeParser extends BaseParser{
 
     private static final String NEWS_LIST_ID = "news_list";
-    private static final String BASE_URL = "http://www.segye.com/issue/leading.jsp?categoryId=0102020000000";
+    private static final String TITLE_CLASS = "titleh1";
+    private static final String BODY_ID = "article_txt";
+    private static final String END_OF_PAGE = "no_articles";
+    private static final String DATE_OF_NEWS = "SG_ArticleDateLine";
+
+    private static final String BASE_LIST_URL = "http://www.segye.com/issue/leading.jsp?categoryId=0102020000000";
+    private Document doc;
+
+    public SegyeParser(){
+    }
+    private String getListUrlByDate(String year,String month,String date,int page){
+        return BASE_LIST_URL+"&page="+page+"&yyyy="+year+"&mm="+month+"&dd="+date;
+    }
+
+    public List<String> getNewsUrlListByDate(String year,String month,String date){
+        List<String> urlList = new ArrayList<String>();
+        int startPos = 1;
+        boolean isPageExist = true;
+        while(isPageExist){
+            try {
+                HttpResult httpResult = parse(getListUrlByDate(year, month, date, startPos++));
+                if(isFinalPage(httpResult.getBody())) {
+                    isPageExist = false;
+                    break;
+                }
+                urlList.addAll(getNewsUrlList(httpResult));
+            }
+            catch(Exception e){
+                isPageExist = false;
+            }
+        }
+        return urlList;
+    }
+
+    public List<String> getNewsUrlList(HttpResult httpResult) throws Exception{
+        Document doc = Jsoup.parse(httpResult.getBody());
+
+        Element listElement = doc.getElementById(NEWS_LIST_ID);
+        Element innerElement = listElement.getElementsByClass("bd").get(0);
+        Elements elements = innerElement.getElementsByClass("title_cr");
+
+        List<String> urlList = new ArrayList<String>();
+
+        for(int i = 0;i<elements.size();i++)
+            urlList.add(elements.get(i).attr("href"));
+
+        return urlList;
+    }
 
     public HttpResult getDaily(String year, String month, String date, int page) throws IOException {
-        String url = BASE_URL+"&page="+page+"&yyyy="+year+"&mm="+month+"&dd="+date;
+        String url = BASE_LIST_URL+"&page="+page+"&yyyy="+year+"&mm="+month+"&dd="+date;
 
         Request request = new Request.Builder().url(url).get().build();
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -60,7 +108,7 @@ public class SegyeParser {
                 if(all_date != ""){
                     for (index = 0; index < httpResult[index_day].length; index++) {
                         httpResult[index_day][index] = this.getDaily(all_date.substring(0, 4), all_date.substring(4, 6), all_date.substring(6, 8), index + 1);
-                        if (this.isFinalPage(httpResult[index_day][index]))//마지막 페이지의 다음 페이지이면 break
+                        if (this.isFinalPage(httpResult[index_day][index].getBody()))//마지막 페이지의 다음 페이지이면 break
                             break;
                         temp = httpResult[index_day][index];
                         urlList[URL_index + index] = this.getNewsUrlList(temp);
@@ -82,42 +130,68 @@ public class SegyeParser {
         }
         return urlList;
     }
+    public boolean isFinalPage(String html){ // 해당 날짜의 뉴스의 page가 끝이면 true 아니면 false 리턴
+        Document doc = Jsoup.parse(html);
 
-    public boolean isFinalPage(HttpResult httpResult){ // 해당 날짜의 뉴스의 page가 끝이면 true 아니면 false 리턴
-        Document doc = Jsoup.parse(httpResult.getBody());
-
-        Elements elements = doc.getElementsByClass("no_articles");
+        Elements elements = doc.getElementsByClass(END_OF_PAGE);
         return elements.size()==1;
     }
 
-    public List<String> getNewsUrlList(HttpResult httpResult) throws Exception{
-        Document doc = Jsoup.parse(httpResult.getBody());
-
-
-        Element listElement = doc.getElementById(NEWS_LIST_ID);
-        Element innerElement = listElement.getElementsByClass("bd").get(0);
-        Elements elements = innerElement.getElementsByClass("title_cr");
-
-        List<String> urlList = Lists.newArrayList();
-
-        for(int i = 0;i<elements.size();i++)
-            urlList.add(elements.get(i).attr("href"));
-
-        return urlList;
-
-    }
-    public static String parse(String url) throws Exception{
-        OkHttpClient okHttpClient = new OkHttpClient.Builder().followRedirects(false).build();
-        Request request = new Request.Builder().get().url(url).build();
-        Response response = okHttpClient.newCall(request).execute();
-        return response.body().string();
-    }
-    public String getTitle(String body){
-        return Jsoup.parse(body).getElementsByClass("titleh1").text();
+    @Override
+    public void parsePage(String url) throws Exception{
+        HttpResult httpResult = parse(url);
+        if(httpResult.getCode()%2!=0)
+            throw new Exception("페이지가 정상적으로 파싱되지 않았습니다.\nURL : "+url+", Status Code : "+httpResult.getCode());
+        doc = Jsoup.parse(httpResult.getBody());
+        if(doc==null)
+            throw new Exception("Document가 정상적으로 파싱되지 않았습니다.\nURL : "+url);
     }
 
-    public String getBody(String body){
-        return Jsoup.parse(body).getElementById("article_txt").text();
+    @Override
+    public String getTitle() {
+        try{
+            return doc.getElementsByClass(TITLE_CLASS).text();
+        }
+        catch(Exception e){
+            return "getTitle Error";
+        }
+    }
+
+    @Override
+    public String getBody() {
+        try{
+            return doc.getElementById(BODY_ID).text();
+        }
+        catch(Exception e){
+            return "getBody Error";
+        }
+    }
+
+    @Override
+    public String getReporter() {
+        String realBody = this.getBody();
+        List<String> wordList = this.extractWordList(realBody);
+        try{
+            return wordList.get(wordList.size()-2);
+        }
+        catch(Exception e) {
+            return "getReporter Error";
+        }
+    }
+
+    @Override
+    public String getDate() {
+        String original_Date = doc.getElementById(DATE_OF_NEWS).text();
+        String[] split_date = new String[10];
+        split_date = original_Date.split(" ");
+        String[] date = new String[3];
+        date = split_date[1].split("-");
+        try{
+            return date[0]+date[1]+date[2];
+        }
+        catch(Exception e){
+            return "getDate Error";
+        }
     }
 
     public List<String> splitToParagraph(String body){
@@ -159,11 +233,5 @@ public class SegyeParser {
             }
         }
         return wordList;
-    }
-    public String extractReporter(String body){
-        String realBody = this.getBody(body);
-        List<String> wordList = this.extractWordList(realBody);
-
-        return wordList.get(wordList.size()-2);
     }
 }
