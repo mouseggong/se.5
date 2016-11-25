@@ -2,6 +2,7 @@ package com.dgcse.database;
 
 import com.dgcse.entity.AllNewsContent;
 import com.dgcse.entity.NewsContent;
+import com.dgcse.entity.NewsWordContent;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -19,7 +20,7 @@ import java.io.File;
 public class Hibernate {
 
     private static SessionFactory sessionFactory;
-    private static String DEFAULT_CONFIG_FILE = "C:\\Users\\click\\OneDrive\\Documents\\hiber\\src\\main\\resources\\hibernate.cfg.xml";
+    private static String DEFAULT_CONFIG_FILE = "C:\\Users\\Ianohjh\\Desktop\\SE_Project\\src\\main\\resources\\hibernate.cfg.xml";
     private static Configuration configuration;
     private static Hibernate instance;
 
@@ -28,6 +29,7 @@ public class Hibernate {
         if(configuration==null&&sessionFactory==null) {
             configuration = new Configuration().configure(new File(DEFAULT_CONFIG_FILE));
             configuration.addAnnotatedClass(NewsContent.class); // ?
+            configuration.addAnnotatedClass(NewsWordContent.class);
             configuration.addAnnotatedClass(AllNewsContent.class);
             StandardServiceRegistryBuilder sb = new StandardServiceRegistryBuilder();
             sb.applySettings(configuration.getProperties());

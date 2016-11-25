@@ -23,8 +23,17 @@ public class AllNewsContent {
 
     public AllNewsContent(){}
 
-    public AllNewsContent(String word) {
+    public AllNewsContent(String word, int allcount) {
         this.word = word;
+        this.allcount = allcount;
+    }
+
+    public int getWid() {
+        return wid;
+    }
+
+    public void setWid(int wid) {
+        this.wid = wid;
     }
 
     public String getWord() {

@@ -42,11 +42,23 @@ public abstract class BaseParser {
     public abstract String getDate();
 
     /**
+     * 해당 기사의 대표사진 url을 추출한다.
+     * @return 대표사진 url(String)
+     */
+    public abstract String getPhoto_url();
+
+    /**
      * 뉴스 페이지 파싱을 시도한다.
      * @param url 파싱할 URL
      * @throws Exception I/O 오류 또는 페이지 자체 오류
      */
     public abstract void parsePage(String url) throws Exception;
+
+    /**
+     * 해당 URL이 일반 기사인지 사진기사인지 확인한다.
+     */
+    public abstract boolean check_NewsType() throws Exception;
+
     /**
      * Http통신을 수행하여 페이지를 파싱한다
      * @param url Parsing을 수행할 URL

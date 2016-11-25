@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import com.dgcse.crawler.entity.HttpResult;
+import com.google.common.collect.Interner;
 import com.google.common.collect.Lists;
 import com.twitter.penguin.korean.KoreanPosJava;
 import com.twitter.penguin.korean.KoreanTokenJava;
@@ -31,13 +29,15 @@ public class SegyeParser extends BaseParser{
     private static final String BODY_ID = "article_txt";
     private static final String END_OF_PAGE = "no_articles";
     private static final String DATE_OF_NEWS = "SG_ArticleDateLine";
+    private static final String NEWS_TYPE = "articleView-Box";
+
 
     private static final String BASE_LIST_URL = "http://www.segye.com/issue/leading.jsp?categoryId=0102020000000";
     private Document doc;
 
     public SegyeParser(){
     }
-    private String getListUrlByDate(String year,String month,String date,int page){
+    public String getListUrlByDate(String year,String month,String date,int page){
         return BASE_LIST_URL+"&page="+page+"&yyyy="+year+"&mm="+month+"&dd="+date;
     }
 
@@ -168,11 +168,30 @@ public class SegyeParser extends BaseParser{
     }
 
     @Override
-    public String getReporter() {
+    public String getReporter() { //기자이름 추출 수정 완료
         String realBody = this.getBody();
-        List<String> wordList = this.extractWordList(realBody);
+        String[] split_word = new String[1000];
+        split_word = realBody.split(" ");
+        String[] split_reporter = new String[2];
+        String E_reporter = "";
+        if(split_word[split_word.length - 2].contains("기자")) {
+            if(split_word[split_word.length - 3].length() > 4) {
+                split_reporter = split_word[split_word.length - 3].split("=");
+                E_reporter = split_reporter[1];
+            }
+            else
+                E_reporter = split_word[split_word.length - 3];
+        }
+        else {
+            if(split_word[split_word.length - 1].contains("."))
+                E_reporter = null;
+            else if(split_word[split_word.length - 2].contains("@"))
+                E_reporter = split_word[split_word.length - 3];
+            else
+                E_reporter = split_word[split_word.length - 2];
+        }
         try{
-            return wordList.get(wordList.size()-2);
+            return  E_reporter;
         }
         catch(Exception e) {
             return "getReporter Error";
@@ -182,9 +201,11 @@ public class SegyeParser extends BaseParser{
     @Override
     public String getDate() {
         String original_Date = doc.getElementById(DATE_OF_NEWS).text();
+
         String[] split_date = new String[10];
         split_date = original_Date.split(" ");
         String[] date = new String[3];
+
         date = split_date[1].split("-");
         try{
             return date[0]+date[1]+date[2];
@@ -192,6 +213,27 @@ public class SegyeParser extends BaseParser{
         catch(Exception e){
             return "getDate Error";
         }
+    }
+
+    @Override
+    public String getPhoto_url() {
+        String tag_Photo = doc.getElementById("article_txt").select("img[src$=.jpg").toString();
+        String[] split_word = new String[50];
+        split_word = tag_Photo.split("\"");
+        try{
+            return split_word[split_word.length-2];
+        }
+        catch(Exception e){
+            return "getPhoto_url Error";
+        }
+    }
+
+    @Override
+    public boolean check_NewsType(){
+        if(doc.getElementById(NEWS_TYPE) == null) // 사진 기사의 ID가 존재하지 않는다 = 일반기사
+            return true;
+        else // 사진기사의 ID가 존재 = 사진기사
+            return false;
     }
 
     public List<String> splitToParagraph(String body){
@@ -233,5 +275,22 @@ public class SegyeParser extends BaseParser{
             }
         }
         return wordList;
+    }
+
+    public HashMap<String,Integer> countWordinNews(){
+        HashMap<String,Integer> H_word_count = new HashMap<String,Integer>();
+        List<String> wordList = this.extractWordList(this.getBody());
+        HashSet<String> Check_duplicate = new HashSet<String>();
+
+        for(String word : wordList){
+            if(!Check_duplicate.contains(word)){//초기 단어가 set에 없을때 (1로 세팅)
+                H_word_count.put(word,1);
+                Check_duplicate.add(word);
+            }
+            else{//set에 이미 단어가 있을때 count증가
+                H_word_count.put(word,H_word_count.get(word)+1);
+            }
+        }
+        return H_word_count;
     }
 }
