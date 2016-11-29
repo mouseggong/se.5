@@ -12,17 +12,25 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
+/**
+ * Created by Ianohjh on 2016-11-12.
+ */
+
 public class    SegyeParserTest {
 
-    private static final String TEST_URL1 = "http://www.segye.com/content/html/2016/11/23/20161123003832.html"; //사진기사
+    private static final String TEST_URL1 = "http://www.segye.com/content/html/2016/11/20/20161120002208.html"; //사진기사
     private static final String TEST_URL2 = "http://www.segye.com/content/html/2016/11/23/20161123004010.html"; //일반기사
     private static final String TEST_URL3 = "http://www.segye.com/content/html/2016/11/24/20161124003979.html"; //특이케이스 기자
+    private static final String TEST_URL4 = "http://www.segye.com/content/html/2016/11/25/20161125002113.html"; //본문이 없는 기자
+    private static final String TEST_URL5 = "http://www.segye.com/content/html/2016/11/26/20161126000044.html"; //리포터 테스트
+    private static final String TEST_URL6 = "http://www.segye.com/content/html/2016/11/27/20161127001609.html"; //특수 이모티콘 기사
+
     private SegyeParser parser;
 
     @Before
     public void setUp() throws Exception{
         parser = new SegyeParser();
-        parser.parsePage(TEST_URL2);
+        parser.parsePage(TEST_URL6);
     }
 
     @After
@@ -95,7 +103,7 @@ public class    SegyeParserTest {
 
     @Test
     @Ignore
-    public void testNeospageloop() throws Exception {//해당 날짜의 모든 page에 해당하는 뉴스의 URL리스트를 뽑아내는 test
+    public void testNewspageloop() throws Exception {//해당 날짜의 모든 page에 해당하는 뉴스의 URL리스트를 뽑아내는 test
         HttpResult[] httpResult = new HttpResult[50]; //넉넉하게 사이즈 잡음 (보통 최소 15page ~ 최대 31~32page까지 있음)
         List<String>[] urlList = new List[50];
         for(int index = 0; index < httpResult.length; index++){
@@ -155,7 +163,7 @@ public class    SegyeParserTest {
     }
 
     @Test
-    //@Ignore
+    @Ignore
     public void testcountWordinNews() throws Exception{
         HashMap<String, Integer> test_hash = parser.countWordinNews();
         Set<String> key_set = test_hash.keySet();

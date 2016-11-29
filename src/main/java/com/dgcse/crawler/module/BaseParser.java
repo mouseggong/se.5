@@ -5,7 +5,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.io.IOException;
+import java.net.SocketException;
+
 /**
+ * Created by Ianohjh on 2016-11-18.
  * Parsing을 수행할 Parser가 상속받아야 하는 기본 클래스
  */
 
@@ -65,12 +69,26 @@ public abstract class BaseParser {
      * @return Http 통신 결과
      * @throws Exception I/O 오류
      */
-    public HttpResult parse(String url) throws Exception{
-        Request getRequest = new Request.Builder().url(url).build();
-        Response response = httpClient.newCall(getRequest).execute();
-        int code = response.code();
-        String body = response.body().string();
-        response.close();
-        return new HttpResult(code,body);
+    public HttpResult parse(String url) {
+        int code = 0;
+        String body = " ";
+        boolean flag = true;
+        while(flag) {//예외 발생시 프로그램이 계속 수행되게 하기 위해 flag를 이용한 loop처리
+            try {
+                Request getRequest = new Request.Builder().url(url).build();//get방식의 요청
+                Response response = httpClient.newCall(getRequest).execute();//받은 응답
+                code = response.code();
+                body = response.body().string();
+                response.close();
+                flag = false;
+            }
+            catch (SocketException e){
+                System.out.println("SocketException : Connection reset!!!");
+            }
+            catch (IOException e){
+                System.out.println("IOException : Request again!!!");
+            }
+        }
+        return new HttpResult(code, body);
     }
 }

@@ -18,6 +18,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Created by moon-hochan on 2016-11-13.
+ */
+
 public class HibernateTest {
     private Hibernate hibernate;
     private Session session;
@@ -42,16 +46,16 @@ public class HibernateTest {
     @Test
     @Ignore
     public void newsSaveTest()  throws Exception{
-        SegyeParser test_parser = new SegyeParser();
-        List<String>[] test_urlList = test_parser.oneWeek_urlList();
-        test_parser.parsePage(TEST_BASE_URL+test_urlList[1].get(0));
+        SegyeParser test_parser;
+        test_parser = new SegyeParser();
+        test_parser.parsePage(TEST_BASE_URL+"/content/html/2016/11/26/20161126000909.html");
 
         NewsContent newsContent = new NewsContent();
         newsContent.setTitle(test_parser.getTitle());
         newsContent.setBody(test_parser.getBody());
         newsContent.setDate(test_parser.getDate());
         newsContent.setReporter(test_parser.getReporter());
-        newsContent.setUrl(TEST_BASE_URL+test_urlList[1].get(0));
+        newsContent.setUrl(TEST_BASE_URL+"/content/html/2016/11/26/20161126000909.html");
 
         session.save(newsContent);
         session.getTransaction().commit();
@@ -84,11 +88,11 @@ public class HibernateTest {
     }
 
     // tbl_News, tbl_AllNews 에 대한 select Test
-    @Ignore
     @Test
+    @Ignore
     public void NewsWordInsertTest(){
-        String url = "http://www.segye.com/content/html/2016/11/24/20161124004005.html";
-        String word = "정부";
+        String url = TEST_BASE_URL+"/content/html/2016/11/22/20161122000222.html";
+        //String word = "정부";
 
         // table 이름은 원래 오류로 인식
         Query query1 = session
@@ -97,14 +101,54 @@ public class HibernateTest {
 
         List<NewsContent> list1 = query1.list();
 
-        query1 = session
-                .createQuery("from tbl_allnews as a where a.word=?");
-        query1.setParameter(0,word);
+        System.out.println(list1.get(0).getNid());
+    }
 
-        List<AllNewsContent> list2 = query1.list();
+    // 하나의 문서 내에서 전체 단어 개수
+    @Test
+    @Ignore
+    public void totalPartialByNidTest(){
+        int total = 0, i = 1;
 
+        Query query = session
+                .createNativeQuery("select partialcount from tbl_news_word where nid = ?");
+        query.setParameter(1,i);
 
-            System.out.println(list1.get(0).getNid());
-            System.out.println(list2.get(0).getWid());
+        List<Integer> list = query.list();
+
+        for(int a : list){
+            total += a;
+        }
+
+        System.out.println(total);
+    }
+
+    // 해당 테이블 전체 문서 개수
+    @Ignore
+    @Test
+    public void IDF_total_doc(){
+        String tbl = "tbl_news";
+
+        Query query = session
+                .createNativeQuery("select count(*) from " + tbl);
+
+        List<Integer> list = query.list();
+
+        System.out.println(list.get(0));
+    }
+
+    // 해당 단어를 포함하고 있는 문서의 개수
+    @Test
+    @Ignore
+    public void IDF_contain_doc(){
+        int i = 2;
+
+        Query query = session
+                .createNativeQuery("select count(if(wid=? , 1, null)) from tbl_news_word ");
+        query.setParameter(1,i);
+
+        List<Integer> list = query.list();
+
+        System.out.println(list.get(0));
     }
 }

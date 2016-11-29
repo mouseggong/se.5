@@ -3,7 +3,7 @@ package com.dgcse.entity;
 import javax.persistence.*;
 
 /**
- * Created by moon-hochan on 2016-11-22.
+ * Created by moon-hochan on 2016-11-18.
  * @Entity tbl_news 뉴스 기사
  * @Param nid 뉴스 기사 각각의 고유 번호
  * @Param title 제목

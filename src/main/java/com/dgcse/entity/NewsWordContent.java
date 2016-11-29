@@ -3,7 +3,9 @@ package com.dgcse.entity;
 import javax.persistence.*;
 
 /**
- * Created by Ianohjh on 2016-11-23.
+ * Created by moon-hochan on 2016-11-19.
+ * @Param   newsWordId      nid와 wid로 이루어진 객체(복합키)
+ * @Param   partailcount    해당 문서에서 해당 단어의 개수
  */
 @Entity(name = NewsWordContent.TABLE_NAME)
 public class NewsWordContent {

@@ -12,7 +12,7 @@ import org.hibernate.cfg.Configuration;
 import java.io.File;
 
 /**
- * Created by moon-hochan on 2016-11-22.
+ * Created by moon-hochan on 2016-11-13.
  * @Param sessionFactory  session을 생성
  * @Param DEFAULT_CONFIG_FILE  Hibernate 설정 파일 path
  * @Param configuration  설정 정보가 담겨 있는 객체
@@ -28,9 +28,11 @@ public class Hibernate {
     private Hibernate() throws Exception{
         if(configuration==null&&sessionFactory==null) {
             configuration = new Configuration().configure(new File(DEFAULT_CONFIG_FILE));
+            // entity로 처리할 클래스 를 등록해준다.
             configuration.addAnnotatedClass(NewsContent.class); // ?
             configuration.addAnnotatedClass(NewsWordContent.class);
             configuration.addAnnotatedClass(AllNewsContent.class);
+
             StandardServiceRegistryBuilder sb = new StandardServiceRegistryBuilder();
             sb.applySettings(configuration.getProperties());
             StandardServiceRegistry standardServiceRegistry = sb.build();
@@ -38,6 +40,7 @@ public class Hibernate {
         }
     }
 
+    // hibernate instance 생성
     public static Hibernate getInstance() throws Exception{
         if(instance==null)
             instance = new Hibernate();
@@ -45,12 +48,16 @@ public class Hibernate {
     }
 
     // sessionFactory를 반환
-    public SessionFactory getSessionFactory(){
+    public SessionFactory getSessionFactory()
+    {
         return sessionFactory;
+
     }
 
     // DB와의 connection을 끊어 준다
-    public void shutdown(){
+    public void shutdown()
+    {
         sessionFactory.close();
+
     }
 }
