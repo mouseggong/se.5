@@ -3,7 +3,10 @@ package com.dgcse.entity;
 import javax.persistence.*;
 
 /**
- * Created by click on 2016-11-22.
+ * Created by moon-hochan on 2016-11-18.
+ * tbl_allnews의 entity 클래스
+ * @Param wid   단어 하나마다의 고유 ID
+ * @Param word  해당 단어
  */
 @Entity(name = AllNewsContent.TABLE_NAME )
 public class AllNewsContent {
@@ -23,8 +26,17 @@ public class AllNewsContent {
 
     public AllNewsContent(){}
 
-    public AllNewsContent(String word) {
+    public AllNewsContent(String word, int allcount) {
         this.word = word;
+        this.allcount = allcount;
+    }
+
+    public int getWid() {
+        return wid;
+    }
+
+    public void setWid(int wid) {
+        this.wid = wid;
     }
 
     public String getWord() {

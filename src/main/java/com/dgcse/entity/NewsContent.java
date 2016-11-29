@@ -3,7 +3,7 @@ package com.dgcse.entity;
 import javax.persistence.*;
 
 /**
- * Created by moon-hochan on 2016-11-22.
+ * Created by moon-hochan on 2016-11-18.
  * @Entity tbl_news 뉴스 기사
  * @Param nid 뉴스 기사 각각의 고유 번호
  * @Param title 제목
@@ -23,6 +23,7 @@ public class NewsContent {
     private static final String COL_REPORTER = "reporter";
     private static final String COL_URL = "url";
     private static final String COL_WORDCOUNT = "wordcount";
+    private static final String COL_PHOTO = "photo_url";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,23 +41,36 @@ public class NewsContent {
     @Column(name=COL_REPORTER)
     private String reporter;
 
-    @Column(name=COL_URL)
+    @Column(name=COL_URL, unique = true)
     private String url;
 
     @Column(name=COL_WORDCOUNT)
     private int wordcount;
 
+    @Column(name=COL_PHOTO)
+    private String photo_url;
+
     public NewsContent(){
 
     }
 
-    public NewsContent(String url,String title,String body,String date,String reporter, int wordcount){
+    public NewsContent(String url,String title,String body,String date,String reporter, int wordcount, String photo_url){
         this.url = url;
         this.title = title;
         this.body = body;
         this.date = date;
         this.reporter = reporter;
         this.wordcount = wordcount;
+        this.photo_url = photo_url;
+    }
+
+
+    public int getNid() {
+        return nid;
+    }
+
+    public void setNid(int nid) {
+        this.nid = nid;
     }
 
     public String getTitle() {
@@ -103,4 +117,7 @@ public class NewsContent {
 
     public void setWordcount(int wordcount) { this.wordcount = wordcount; }
 
+    public void setPhoto_url(String photo_url) { this.photo_url = photo_url; }
+
+    public String getPhoto_url() { return photo_url; }
 }

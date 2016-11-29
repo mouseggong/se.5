@@ -7,9 +7,9 @@
     <session-factory>
         <!-- Database connection settings -->
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://61.255.45.175:23306/sogong</property>
+        <property name="connection.url">jdbc:mysql://localhost:6306/sogong</property>
         <property name="connection.username">root</property>
-        <property name="connection.password">lhr123</property>
+        <property name="connection.password">wlsdk012</property>
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
         <!-- JDBC connection pool (use the built-in) -->
